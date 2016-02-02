@@ -54,19 +54,6 @@ class SimpleTable(tk.Frame):
         #self._widgets = []
         r=10
         #display_image(root)
-
-        '''self.button4=[]
-        b_id2=0
-        url="http://img6a.flixcart.com/image/sofa-sectional/w/a/c/6000020310001-semi-aniline-leather-hometown-brown-brown-400x400-imae94v2g7gdcdsk.jpeg"
-        var=url
-        u = urlopen(url)
-        raw_data = u.read()
-        u.close()
-        image_file = Image.open(StringIO(raw_data))
-        self.photo_image = ImageTk.PhotoImage(image_file)
-        self.button4.append(tk.Button(self.frame,text="Zoom Image",image=self.photo_image,command=lambda var=var:image_file.main(var)))
-        self.button4[b_id2].grid(row=r,column=10,sticky="nsew")
-        b_id2=b_id2+1       '''
         g_data=soup.find_all("div",{"class":"product-details"})
         #print g_data
         for titles in g_data:
@@ -99,11 +86,7 @@ class SimpleTable(tk.Frame):
                 tk.Label(self.frame,text=" ",borderwidth=0, relief="solid",font=("Helvetica", 10)).grid(row=r,column=4,sticky="nsew",padx=1, pady=1)
                 r=r+1  
         test=""
-        #img = ImageTk.PhotoImage(Image.open("C:\Users\Space\Desktop\python projects\images.jpg"))
-        #panel = tk.Label( root,image = img)
-        #panel.place(x=0,y=0,relwidth=1,relheight=1)
-        #panel.pack()
-        #print g_data
+
         for titles in g_data:
                 key = titles.find_all("div",{"class":"keyFeatures"})
                 #Label(self,text=str(titles)).grid(row=r,column=0,sticky=W)
@@ -162,38 +145,6 @@ class SimpleTable(tk.Frame):
 def main(par):
     app = ExampleApp(par)
     app.title("Product Specification")
-    #url="http://img6a.flixcart.com/image/sofa-sectional/w/a/c/6000020310001-semi-aniline-leather-hometown-brown-brown-400x400-imae94v2g7gdcdsk.jpeg"
-    #url="http://38.media.tumblr.com/a123606e52db443841a6bb982d93febe/tumblr_n7a40sXB7P1r2geqjo1_r1_500.gif"
-    #url="http://www.wired.com/wp-content/uploads/2015/03/10182025tonedfull-660x441.jpg"
-    #image_byt = urlopen(url).read()
-    #url1=url
-    #url=par
-    #print url+str("avneet")
-    #image_b64 = base64.encodestring(image_byt)
-    #photo = tk.PhotoImage(data=image_b64)
-    #w = 540
-    #h = 340
-    #cv = tk.Canvas(bg='white', width=w, height=h)
-    #cv.pack()
-    #tu = turtle.RawTurtle(cv)
-    # put the image on the turtle canvas with
-    # create_image(xpos, ypos, image, anchor)
-    #xpos = int(w/2 * 1)
-    #ypos = int(h/2 * 1)
-    #print(xpos, ypos)
-    #cv.create_image(-xpos, -ypos, image=photo, anchor='nw')
-    #image_file=Image.open(StringIO(image_byt))
-    #photo_image=ImageTk.PhotoImage(image_file)
-    #label=tk.Label(image=photo_image)
-    #label.pack()
-    #u = urlopen(url)
-    #raw_data = u.read()
-    #u.close()
-    #image_file = Image.open(StringIO(raw_data))
-    #photo_image = ImageTk.PhotoImage(image_file)
-    #label = tk.Label(image=photo_image)
-    #label.pack()
-    #root=Tk()
     '''
     url="http://img6a.flixcart.com/image/sofa-sectional/w/a/c/6000020310001-semi-aniline-leather-hometown-brown-brown-400x400-imae94v2g7gdcdsk.jpeg"
     u = urlopen(url)
@@ -204,8 +155,5 @@ def main(par):
     app.label = tk.Label(image=photo_image)
     #r=r+2
     app.label.pack()'''
-    #img = ImageTk.PhotoImage(Image.open("http://img6a.flixcart.com/image/sofa-sectional/w/a/c/6000020310001-semi-aniline-leather-hometown-brown-brown-400x400-imae94v2g7gdcdsk.jpeg"))
-    #panel = Label(app, image = img)
-    #panel.pack(side = "bottom", fill = "both", expand = "yes")
     app.mainloop()
     

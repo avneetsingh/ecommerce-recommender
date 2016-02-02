@@ -235,10 +235,6 @@ class SimpleTable(tk.Frame):
         #url="http://www.flipkart.com/hometown-belmont-lhs-fabric-6-seater-sectional/p/itme9a8vy4vaewpv?pid=SOFE9A8VBYHCHWAC&al=PkGIJW3ywg1BOE%2BjqMQyMsldugMWZuE7eGHgUTGjVrorjjG6mWQYexJNoqguxi7zAlasJtENodI%3D&ref=L%3A-2969820631779752190&srno=b_1"
         r=requests.get(url)
         soup=BeautifulSoup(r.content)
-        #url=par
-        #print(url)
-        #print par+str("avneet")
-        #soup=BeautifulSoup(open(url))
         container=[]
         ids=[]
         temp_url=url

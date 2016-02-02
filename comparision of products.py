@@ -125,11 +125,6 @@ class Application(Frame):
             for i in range(10):
                 tk.Label(self.frame,text=" ",borderwidth=0, relief="solid",font=("Helvetica", 10)).grid(row=r,column=4,sticky="nsew",padx=1, pady=5)
                 r=r+1
-            
-            #for link in links:
-            #   print "<a href='%s'>%s</a>"%(link.get("href"),link.text)
-            #for i in range(b_id):
-            #   del lst[i]
             lst=[]
             b_id=0
             b_id2=0
@@ -168,14 +163,8 @@ class Application(Frame):
                         u.close()
                         image_file = Image.open(StringIO(raw_data))
                         self.photo_image = ImageTk.PhotoImage(image_file)
-                        #tk.Label(self.frame,text=" ",borderwidth=0, relief="solid",font=("Helvetica", 10)).grid(row=r,column=9,sticky="nsew",padx=1, pady=5)
-                        #tk.Label(self.frame,text=" ",borderwidth=0, relief="solid",font=("Helvetica", 10)).grid(row=r,column=10,sticky="nsew",padx=1, pady=5)
                         self.button4.append(tk.Button(self.frame,text="Zoom Image",image=self.photo_image))
-                        #self.button4[b_id2].grid(row=r,column=14,sticky="nsew")
-                        #self.button4.size(height=250, width=150)
                         r=r+1
-                        #self.button4[b_id2].grid(row=r,column=14,sticky="nsew")
-                        #self.grid()
                         self.button6.append(Button(self.frame,text="view Image", command=lambda var=var:viewImage(var)))
                         self.button6[b_id4].grid(row=r,column=20,sticky="nsew")
                         b_id4=b_id4+1
