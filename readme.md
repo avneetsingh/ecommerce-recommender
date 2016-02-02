@@ -6,6 +6,6 @@
 
 ####Please do install following libraries for using the codes.
 
-#### 1. Tkinter
-#### 2. Beautiful Soup
-#### 3. NLTK
+ 1. Tkinter
+ 2. Beautiful Soup
+ 3. NLTK
