@@ -66,7 +66,6 @@ class Application(Frame):
 
         self.frame.bind("<Configure>", self.onFrameConfigure)
         self.create_widgets()
-
     def create_widgets(self):
         
         self.instruction = Label(self,text="Search Product").grid(row=0,column=0,columnspan=1)
