@@ -16,8 +16,7 @@ To run the Programs.
 
  Run comparision_of_products.py
  
- Note : The Application analysis on top 20 reviews. You can make them to analyze reviews by making changes in product_reviews    
- file on line 276
+ Note : The Application analysis on top 20 reviews. You can make them to analyze more user reviews by making changes in product_reviews.py  file on line 276
  
  #for i in range(2): // it fetches 20 reviews
  
