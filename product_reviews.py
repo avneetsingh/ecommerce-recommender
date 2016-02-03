@@ -112,34 +112,36 @@ def word_orient(opinion,feat,sent):
 
 def processLanguage(exampleArray, ids,url,reviewTitle):
     try:
-        ''' #print exampleArray
-        exampleArray = exampleArray.replace('\n', ' ').replace('\r', '')
         #print exampleArray
-        item =exampleArray
-        #print item
-        tokenized =nltk.word_tokenize(item)
-        tagged = nltk.pos_tag(tokenized)
-        item = item.replace('\n', ' ').replace('\r', '')
-        chunkGram =r"""Chunk:{<NN|VB|JJ|RB|NNP\w*>*<NN|VB|JJ|RB|NNP|VBZ|VBD\w*>*<VBD|TO|RP|RB|VBN|NN|NNS|NNP|JJ\w*>*<VBD|VBN|NN|NNS|NNP|VBG|VB\w*>*<VBD|VBN|NN|NNS|NNP|RB\w*>*<VBD|VBN|NN|NNS|NNP|RB|JJ|VBZ\w?>}"""
-        chunkParser =nltk.RegexpParser(chunkGram)
-        chunked =chunkParser.parse(tagged)
-        namedEnt = nltk.ne_chunk(tagged, binary=True)
-        entities=re.findall(r'Chunk\s(.*)/',str(chunked))
-        entities=re.sub(r'/[^\s]+','',str(entities))
-        #print entities
-        words=entities.split(',')
-        for items in words:
-            count = len(re.findall(r'\w+', items))
-            if count <=1:
-                pass
-            else:
-                print items
-                
-            #chunked.draw()
-            #namedEnt.draw()
-          '''
-        r=requests.get(url)
         display=[]
+        rest=exampleArray
+        '''for items in rest:
+            #rest = rest.replace('\n', ' ').replace('\r', '')
+            #print exampleArray
+            item =items
+            #print item
+            tokenized =nltk.word_tokenize(item)
+            tagged = nltk.pos_tag(tokenized)
+            item = item.replace('\n', ' ').replace('\r', '')
+            chunkGram =r"""Chunk:{<NN|VB|JJ|RB|NNP\w*>*<NN|VB|JJ|RB|NNP|VBZ|VBD\w*>*<VBD|TO|RP|RB|VBN|NN|NNS|NNP|JJ\w*>*<VBD|VBN|NN|NNS|NNP|VBG|VB\w*>*<VBD|VBN|NN|NNS|NNP|RB\w*>*<VBD|VBN|NN|NNS|NNP|RB|JJ|VBZ\w?>}"""
+            chunkParser =nltk.RegexpParser(chunkGram)
+            chunked =chunkParser.parse(tagged)
+            namedEnt = nltk.ne_chunk(tagged, binary=True)
+            entities=re.findall(r'Chunk\s(.*)/',str(chunked))
+            entities=re.sub(r'/[^\s]+','',str(entities))
+            #print entities
+            words=entities.split(',')
+            for items2 in words:
+                count = len(re.findall(r'\w+', items2))
+                if count <=2:
+                    pass
+                else:
+                    display.append(items2)
+                    
+                #chunked.draw()
+                #namedEnt.draw()'''
+
+        r=requests.get(url)
         feature=[]
         soup=BeautifulSoup(r.content)
         features={}
@@ -271,7 +273,7 @@ class SimpleTable(tk.Frame):
         url= url[:-17]
         url2 = "http://www.flipkart.com"+ url+str("&rating=1,2,3,4,5&reviewers=all&type=top&sort=most_recent&start=")
         r=2
-        for i in range(10):
+        for i in range(2):
             url3= url2+str((i)*10)
             rr= requests.get(url3);
             soup =BeautifulSoup(rr.content)
