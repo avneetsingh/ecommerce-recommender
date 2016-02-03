@@ -14,7 +14,6 @@ import image_file
 import create_table
 import product_reviews
 import time
-from multiprocessing import pool
 from glob import glob
 from cStringIO import StringIO
 try:
