@@ -69,6 +69,7 @@ class SimpleTable(tk.Frame):
             for p in price:
                 tk.Label(self.frame,text=str("Selling Price : ")+ p.getText(),borderwidth=0, relief="solid",font=("Helvetica", 18)).grid(row=r,column=4,sticky="nsew",padx=1, pady=1)
                 r=r+1
+                break
             for i in range(4):
                 tk.Label(self.frame,text=" ",borderwidth=0, relief="solid",font=("Helvetica", 10)).grid(row=r,column=4,sticky="nsew",padx=1, pady=1)
                 r=r+1

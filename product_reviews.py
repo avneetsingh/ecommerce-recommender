@@ -110,7 +110,7 @@ def word_orient(opinion,feat,sent):
 	final_op=(orient/d)
 	return final_op
 
-def processLanguage(exampleArray, ids,url):
+def processLanguage(exampleArray, ids,url,reviewTitle):
     try:
         ''' #print exampleArray
         exampleArray = exampleArray.replace('\n', ' ').replace('\r', '')
@@ -139,14 +139,22 @@ def processLanguage(exampleArray, ids,url):
             #namedEnt.draw()
           '''
         r=requests.get(url)
+        display=[]
+        feature=[]
         soup=BeautifulSoup(r.content)
         features={}
-        features['cost']=[[],[],[]]
+        features['performance']=[[],[],[]]
+        feature.append("performance")
         features['price']=[[],[],[]]
+        feature.append("price")
         features['reliability']=[[],[],[]]
+        feature.append("reliability")
         features['service']=[[],[],[]]
+        feature.append("service")
         features['delivery']=[[],[],[]]
+        feature.append("delivery")
         r=requests.get(url)
+        #specsKey=""
         soup=BeautifulSoup(r.content)
         g_data=soup.find_all("div",{"class":"productSpecs"})
         for titles in g_data:
@@ -154,10 +162,17 @@ def processLanguage(exampleArray, ids,url):
             for table in tables:
                 tr1=table.find_all("td",{"class":"specsKey"})
                 for i in range(len(tr1)):
-                        specsKey=tr1[i].getText()
+                        specsKey=tr1[i].getText().lower()
+                        feature.append(specsKey)
                         features[specsKey]=[[],[],[]]
+                        
         title=""
-        
+        for i in reviewTitle:
+            for j in feature:
+                res= i.find(j)
+                if(res!=-1):
+                    display.append(i)
+                    break
         g_data=soup.find_all("div",{"class":"product-details"})
         for titles in g_data:
             key = titles.find_all("h1",{"class":"title"})
@@ -166,48 +181,47 @@ def processLanguage(exampleArray, ids,url):
         kk=0
         #features={'camera':[[],[],[]],'picture':[[],[],[]],'display':[[],[],[]],'processor':[[],[],[]],'battery':[[],[],[]],'control':[[],[],[]],'touch':[[],[],[]],'memory':[[],[],[]],'nfc':[[],[],[]],'design':[[],[],[]],'price':[[],[],[]],'experience':[[],[],[]]}
         for j in exampleArray:
-                #print (ids[kk])
-                tokens=nltk.word_tokenize(j)
-		#print "_________________________"
-		#print tokens
-		#print "_________________________"
-		t=nltk.pos_tag(tokens)
-		temp={}
-		feat_o={}
-		ow=[]
-		but=0
-		for k in t:
-			if features.has_key(k[0]):
-				temp[k[0]]=0
-				feat_o[k[0]]=''
-			if k[0]=='but':
-				but=1
-			if k[1]=='JJ' or k[1]=='JJR' or k[1]=='JJS' or k[1]=='NN' or k[1]=='NNS' or k[1]=='RB' or k[1]=='RBR' or k[1]=='VB' or k[1]=='VBG':
-				ow.append(k[0])
-		for feat in temp:
-			if but==1:
-				temp[feat]=but_rule(feat,ow,j)
-			else:
-				for opinion in ow:
-					temp[feat]=temp[feat]+word_orient(opinion,feat,j)
-			if temp[feat]>0:
-				feat_o[feat]=1
-			elif  temp[feat]<0:
-				feat_o[feat]=-1
-			else:
-				feat_o[feat]=0
-		
-		for c in feat_o:
-			if feat_o[c]==1:
-				features[c][0].append(kk)
-				kk=kk+1
-			elif feat_o[c]==-1:
-				features[c][1].append(kk)
-				kk=kk+1
-			else:
-				features[c][2].append(kk)
-				kk=kk+1
+            #print (ids[kk])
+            tokens=nltk.word_tokenize(j)
+            t = nltk.pos_tag(tokens)
+            temp={}
+            feat_o={}
+            ow=[]
+            but=0
+            for k in t:
+                if features.has_key(k[0]):
+                    temp[k[0]]=0
+                    feat_o[k[0]]=''
+                if(k[0]=='but'):
+                    but=1
+                if k[1]=='JJ' or k[1]=='JJR' or k[1]=='JJS' or k[1]=='NN' or k[1]=='NNS' or k[1]=='RB' or k[1]=='RBR' or k[1]=='VB' or k[1]=='VBG':
+                    ow.append(k[0])
+            for feat in temp:
+                if but==1:
+                    temp[feat]=but_rule(feat,ow,j)
+                else:
+                    for opinion in ow:
+                        temp[feat]=temp[feat]+word_orient(opinion,feat,j)
+                if temp[feat]>0:
+                    feat_o[feat]=1
+                elif  temp[feat]<0:
+                    feat_o[feat]=-1
+                else:
+                    feat_o[feat]=0
+            for c in feat_o:
+                if feat_o[c]==1:
+                    features[c][0].append(kk)
+                    kk=kk+1
+                elif feat_o[c]==-1:
+                    features[c][1].append(kk)
+                    kk=kk+1
+                else:
+                    features[c][2].append(kk)
+                    kk=kk+1
 		#kk=kk+1
+        for each in display:
+            print (each)
+        print "\n"
         for each in features:
             if(int(len(features[each][0]))> 0):
                 print str(len(features[each][0]))+ " people were happy and satisfied about "+each+" of "+title+"."     
@@ -236,6 +250,7 @@ class SimpleTable(tk.Frame):
         r=requests.get(url)
         soup=BeautifulSoup(r.content)
         container=[]
+        reviewTitle=[]
         ids=[]
         temp_url=url
         self.canvas = tk.Canvas(root, borderwidth=0, background="#ffffff")
@@ -256,7 +271,7 @@ class SimpleTable(tk.Frame):
         url= url[:-17]
         url2 = "http://www.flipkart.com"+ url+str("&rating=1,2,3,4,5&reviewers=all&type=top&sort=most_recent&start=")
         r=2
-        for i in range(2):
+        for i in range(10):
             url3= url2+str((i)*10)
             rr= requests.get(url3);
             soup =BeautifulSoup(rr.content)
@@ -286,6 +301,7 @@ class SimpleTable(tk.Frame):
                         for titles in review.find_all("div",{"class":"fk-font-normal"}):  
                             tk.Label(self.frame,text=titles.get_text(),borderwidth=0, relief="solid",font=("Helvetica", 12)).grid(row=r,column=1,sticky="nsew",padx=1, pady=5)
                             container.append((titles.get_text()))
+                            reviewTitle.append((titles.get_text()))
                             r=r+1
                         #print review
                         for comments in review.find_all("span",{"class":"review-text"}):
@@ -294,7 +310,7 @@ class SimpleTable(tk.Frame):
                             tk.Label(self.frame,text=comments.get_text(),borderwidth=0, relief="solid",font=("Helvetica", 8)).grid(row=r,column=0,sticky="nsew",padx=1, pady=5,columnspan=10)
                             r=r+2
                     r=r+1
-        processLanguage(container,ids,temp_url)
+        processLanguage(container,ids,temp_url,reviewTitle)
     def set(self, row, column, value):
         widget = self._widgets[row][column]
         widget.configure(text=value)

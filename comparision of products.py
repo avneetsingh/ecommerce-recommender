@@ -129,12 +129,16 @@ class Application(Frame):
             b_id=0
             b_id2=0
             g_data =soup.find_all("div",{"class":"gu3"})
+            if not g_data:
+                g_data= soup.find_all("div",{"class":"unit"})
+            
             self.button3=[]
             self.button4=[]
             self.button5=[]
             self.button6=[]
             b_id3=0
             b_id4=0
+            #print g_data
             for col in g_data:
                 for sets in col.find_all("div",{"class":"pu-title"}):
                     #print sets.get_text('|',strip=True)
@@ -147,13 +151,14 @@ class Application(Frame):
                 for sets in col.find_all("div",{"class":"pu-rating"}):
                     #print sets.get_text('|',strip=True)
                     tk.Label(self.frame,text=sets.get_text(' ',strip=True),borderwidth=0, relief="solid",font=("Helvetica", 10)).grid(row=r,column=8,sticky="nsew",padx=1, pady=5)
-                    
+                flag=0   
                 for sets in col.find_all("div",{"class":"pu-visual-section"}):
                     #print sets
                     p_img=sets.find_all("img")
                     #print p_img
                     for pimg in p_img:
                         var=pimg.get("data-src")
+                        #print var
                         #url="http://img6a.flixcart.com/image/sofa-sectional/w/a/c/6000020310001-semi-aniline-leather-hometown-brown-brown-400x400-imae94v2g7gdcdsk.jpeg"
                         #print var
                         url=var
@@ -164,9 +169,11 @@ class Application(Frame):
                         image_file = Image.open(StringIO(raw_data))
                         self.photo_image = ImageTk.PhotoImage(image_file)
                         self.button4.append(tk.Button(self.frame,text="Zoom Image",image=self.photo_image))
-                        r=r+1
+                        self.button4[b_id2].grid(row=r,column=16,sticky="nsew")
+                        #r=r+1
+                        #self.grid()
                         self.button6.append(Button(self.frame,text="view Image", command=lambda var=var:viewImage(var)))
-                        self.button6[b_id4].grid(row=r,column=20,sticky="nsew")
+                        self.button6[b_id4].grid(row=r,column=18,sticky="nsew")
                         b_id4=b_id4+1
                         #self.show_next()
                         #self.button4[b_id2].pack()
@@ -179,27 +186,29 @@ class Application(Frame):
                         #r=r+2
                         #label.pack()
                     r=r+1
-                for sets in col.find_all("a",{"class":"pu-image"}):
-                    #print sets.get_text('|',strip=True)
-                    val="http://www.flipkart.com"+sets.get("href")
-                    tk.Label(self.frame,text=" ",borderwidth=0, relief="solid",font=("Helvetica", 10)).grid(row=r,column=4,sticky="nsew",padx=1, pady=5)
-                    r=r+1
-                    #print val
-                    lst.append(val)
-                    #tk.Label(self.frame,text="http://www.flipkart.com"+sets.get("href"),borderwidth=0, relief="solid",font=("Helvetica", 10)).grid(row=r,column=4,sticky="nsew",padx=1, pady=5)
-                    self.button3.append(Button(self.frame,text="Check this Product", command=lambda val=val:features1(val)))                    
-                    self.button3[b_id].grid(row=r,column=4,sticky="nsew")
-                    b_id=b_id+1
-                    #self.button1["command"]=self.features
-                    #tk.button1.grid(row=r,column=4,sticky="nsew")
-                    #r=r+1
-                    self.button5.append(Button(self.frame,text="Check out reviews", command=lambda val=val:product_reviews.main(val)))
-                    self.button5[b_id3].grid(row=r,column=6,sticky="nsew")
-                    b_id3=b_id3+1
-                    
-
-                    #print "<a href= http://www.flipkart.com%s>%s</a>"%(sets.get("href"),sets.text)
-                    r=r+1
+                #print sets
+                if(flag==0):
+                    for sets in col.find_all("a",{"class":"pu-image"}):
+                        #print sets.get_text('|',strip=True)
+                        val="http://www.flipkart.com"+sets.get("href")
+                        tk.Label(self.frame,text=" ",borderwidth=0, relief="solid",font=("Helvetica", 10)).grid(row=r,column=4,sticky="nsew",padx=1, pady=5)
+                        r=r+1
+                        #print val
+                        lst.append(val)
+                        #tk.Label(self.frame,text="http://www.flipkart.com"+sets.get("href"),borderwidth=0, relief="solid",font=("Helvetica", 10)).grid(row=r,column=4,sticky="nsew",padx=1, pady=5)
+                        self.button3.append(Button(self.frame,text="Check this Product", command=lambda val=val:features1(val)))                    
+                        self.button3[b_id].grid(row=r,column=4,sticky="nsew")
+                        b_id=b_id+1
+                        #self.button1["command"]=self.features
+                        #tk.button1.grid(row=r,column=4,sticky="nsew")
+                        #r=r+1
+                        self.button5.append(Button(self.frame,text="Check out reviews", command=lambda val=val:product_reviews.main(val)))
+                        self.button5[b_id3].grid(row=r,column=6,sticky="nsew")
+                        b_id3=b_id3+1
+                        
+    
+                        #print "<a href= http://www.flipkart.com%s>%s</a>"%(sets.get("href"),sets.text)
+                        r=r+1
                 for i in range(3):
                     tk.Label(self.frame,text=" ",borderwidth=0, relief="solid",font=("Helvetica", 10)).grid(row=r,column=4,sticky="nsew",padx=1, pady=5)
                     r=r+1
