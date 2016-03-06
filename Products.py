@@ -32,6 +32,8 @@ def onFrameConfigure(canvas):
 def features1(par):
         create_table.main(par)
 
+
+
 def reviewsfeatures1(par):
         product_reviews.main(par)
 def viewImage(par):
@@ -116,8 +118,9 @@ class Application(Frame):
             url ="http://www.flipkart.com/search?q="
             url2=url+self.text.get()+"&as=off&as-show=on&otracker=end";
             #print(url2)
-            r= requests.get(url2);
-            soup =BeautifulSoup(r.content);
+            #r= requests.get(url2,proxies=proxies);
+            r=requests.get(url2)
+            soup =BeautifulSoup(r.content, 'html.parser');
             links =soup.find_all("a");
             r=7
             for i in range(10):
@@ -161,17 +164,24 @@ class Application(Frame):
                         #print var
                         url=var
                         #url="http://img6a.flixcart.com/image/sofa-sectional/w/a/c/6000020310001-semi-aniline-leather-hometown-brown-brown-400x400-imae94v2g7gdcdsk.jpeg"
-                        u = urlopen(url)
-                        raw_data = u.read()
+                        #u = requests.get(url,proxies=proxies)
+                        u = requests.get(url)
+                        raw_data = u.content
                         u.close()
                         image_file = Image.open(StringIO(raw_data))
                         self.photo_image = ImageTk.PhotoImage(image_file)
-                        self.button4.append(tk.Button(self.frame,text="Zoom Image",image=self.photo_image))
-                        self.button4[b_id2].grid(row=r,column=16,sticky="nsew")
+                        #self.button4.append(tk.Button(self.frame,text="Zoom Image",image=self.photo_image))
+                        #self.button4[b_id2].grid(row=r,column=16,sticky="nsew")
                         #r=r+1
                         #self.grid()
-                        self.button6.append(Button(self.frame,text="view Image", command=lambda var=var:viewImage(var)))
-                        self.button6[b_id4].grid(row=r,column=18,sticky="nsew")
+                        self.button6.append(tk.Button(self.frame,text="",image=self.photo_image,height=200, width=200,compound=CENTER))
+                        self.button6[b_id4].grid(row=r,column=10,sticky="nsew",pady=5, padx=5)
+                        rowFrame =Frame(self)
+                        curLbl = Label(rowFrame,image=self.photo_image)
+                        curLbl.grid(row=r,column=15,sticky='news');
+                        curLbl.bind(self.button6[b_id4],lambda e, image=self.photo_image:self.popImage(self.photo_image))
+                        #self.button6.append(Button(self.frame,text="view Image", command=lambda var=var:viewImage(var)))
+                        #self.button6[b_id4].grid(row=r,column=18,sticky="nsew")
                         b_id4=b_id4+1
                         #self.show_next()
                         #self.button4[b_id2].pack()
