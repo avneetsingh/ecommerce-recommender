@@ -10,7 +10,6 @@ def main(par):
     
     root = Tk()
     #url = "http://www.wired.com/wp-content/uploads/2015/03/10182025tonedfull-660x441.jpg"
-    url="http://img6a.flixcart.com/image/sofa-sectional/w/a/c/6000020310001-semi-aniline-leather-hometown-brown-brown-400x400-imae94v2g7gdcdsk.jpeg"
     url=par
     u = urlopen(url)
     raw_data = u.read()
