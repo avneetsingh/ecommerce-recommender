@@ -13,6 +13,7 @@ import nltk
 import re
 import time
 from cStringIO import StringIO
+import plotly.graph_objs as go
 try:
     # Python2
     import Tkinter as tk
@@ -21,8 +22,13 @@ except ImportError:
     # Python3
     import tkinter as tk
     from urllib.request import urlopen
+import plotly.plotly as py
+from plotly.graph_objs import *
+import plotly
 
+plotly.tools.set_credentials_file(username='SPACE007', api_key='o61g0qzbgl')
 
+py.sign_in('SPACE007', 'o61g0qzbgl')
 f=open('negative-words.txt','r')
 neg = f.read().split('\n')[:-1]
 f.close()
@@ -110,7 +116,7 @@ def word_orient(opinion,feat,sent):
 	final_op=(orient/d)
 	return final_op
 
-def processLanguage(exampleArray, ids,url,reviewTitle):
+def processLanguage(exampleArray, ids,url,reviewTitle,certified):
     try:
         #print exampleArray
         display=[]
@@ -141,9 +147,11 @@ def processLanguage(exampleArray, ids,url,reviewTitle):
                 #chunked.draw()
                 #namedEnt.draw()'''
 
-        r=requests.get(url)
+        #r=requests.get(url,proxies=proxies)
+        #r=requests.get(url)
         feature=[]
-        soup=BeautifulSoup(r.content)
+        averagerating=0;
+        #soup=BeautifulSoup(r.content, 'html.parser')
         features={}
         features['performance']=[[],[],[]]
         feature.append("performance")
@@ -155,9 +163,10 @@ def processLanguage(exampleArray, ids,url,reviewTitle):
         feature.append("service")
         features['delivery']=[[],[],[]]
         feature.append("delivery")
+        #r= requests.get(url,proxies=proxies);
         r=requests.get(url)
         #specsKey=""
-        soup=BeautifulSoup(r.content)
+        soup=BeautifulSoup(r.content, 'html.parser')
         g_data=soup.find_all("div",{"class":"productSpecs"})
         for titles in g_data:
             tables =titles.find_all("table",{"class":"specTable"})
@@ -181,10 +190,17 @@ def processLanguage(exampleArray, ids,url,reviewTitle):
             for t in key:
                 title=t.getText();
         kk=0
+        userId=-1
+        flag=1
+        active=0;
         #features={'camera':[[],[],[]],'picture':[[],[],[]],'display':[[],[],[]],'processor':[[],[],[]],'battery':[[],[],[]],'control':[[],[],[]],'touch':[[],[],[]],'memory':[[],[],[]],'nfc':[[],[],[]],'design':[[],[],[]],'price':[[],[],[]],'experience':[[],[],[]]}
         for j in exampleArray:
             #print (ids[kk])
             tokens=nltk.word_tokenize(j)
+            if(flag==1):
+                userId=userId+1
+            flag=1-flag
+            #print userId
             t = nltk.pos_tag(tokens)
             temp={}
             feat_o={}
@@ -210,28 +226,116 @@ def processLanguage(exampleArray, ids,url,reviewTitle):
                     feat_o[feat]=-1
                 else:
                     feat_o[feat]=0
+            rate=0
+            temp = 0
             for c in feat_o:
+                temp=temp+1
                 if feat_o[c]==1:
                     features[c][0].append(kk)
+                    if(certified[userId]==1):
+                        rate =rate+ 0.9
+                    else:
+                        rate=rate+ 0.7
                     kk=kk+1
                 elif feat_o[c]==-1:
                     features[c][1].append(kk)
+                    if(certified[userId]==1):
+                        rate =rate+0.5
+                    else:
+                        rate=rate-+0.3
                     kk=kk+1
                 else:
                     features[c][2].append(kk)
+                    if(certified[userId]==1):
+                        rate =rate + 0.8
+                    else:
+                        rate=rate + 0.6
                     kk=kk+1
 		#kk=kk+1
+            print str(rate)+" hello"
+            if(rate>0):
+                active=active+1
+            averagerating = averagerating + 4.0*rate
+        #print active
+        averagerating=averagerating/active
+        print "Average Rating of "+ title+ " = " +str(averagerating)
         for each in display:
             print (each)
         print "\n"
+        labelpos=[]
+        labelneg=[]
+        valuepos=[]
+        valueneg=[]
         for each in features:
             if(int(len(features[each][0]))> 0):
-                print str(len(features[each][0]))+ " people were happy and satisfied about "+each+" of "+title+"."     
+                print str(len(features[each][0]))+ " people were happy and satisfied about "+each+" of "+title+"."
+                labelpos.append(each)
+                valuepos.append(len(features[each][0]))
             if(len(features[each][1]) > 0):
                 print str(len(features[each][1]))+ " people were not happy about "+each+" of "+title+"."
+                labelneg.append(each)
+                valueneg.append(len(features[each][1]))
             if(len(features[each][2]) > 0 ):
                 print str(len(features[each][2]))+ " people did average rating about "+each+" of "+title+"."
+                if each in labelpos:
+                    findex=labelpos.index(each)
+                    valuepos[findex]=valuepos[findex]+ len(features[each][2])
+                else:
+                    labelpos.append(each)
+                    valuepos.append(len(features[each][2]))
                 #print "\n"
+        trace1 = Pie(
+            domain=dict(
+            x=[0, 0.52]
+            ),
+            hole=0.4,
+            hoverinfo='label+percent+name',
+            labels=labelpos,
+            labelssrc='SPACE007:3:bd9c85',
+            name='Positive Feedback Percentage of'+ title,
+            values=valuepos,
+            valuessrc='SPACE007:3:319bc1'
+        )
+        trace2 = Pie(
+            domain=dict(
+            x=[0.48, 1]
+            ),
+            hole=0.4,
+            hoverinfo='label+percent+name',
+            labels=labelneg,
+            labelssrc='SPACE007:3:bd9c85',
+            name='Negative Feedback Percentage of'+ title,
+            #text='Mobile',
+            textposition='inside',
+            values=valueneg,
+            valuessrc='SPACE007:3:230ab3'
+        )
+        data = Data([trace1, trace2])
+        layout = Layout(
+            annotations=Annotations([
+                Annotation(
+                    x=0.2,
+                    y=0.5,
+                    font=Font(
+                        size=20
+                    ),
+                    showarrow=False,
+                    text='Positive'
+                ),
+                Annotation(
+                    x=0.8,
+                    y=0.5,
+                    font=Font(
+                        size=20
+                    ),
+                    showarrow=False,
+                    text='Negative'
+                )
+            ]),
+            title='Review Analysis of '+title+ " from Flipkart"
+        )
+        fig = Figure(data=data, layout=layout)
+        plot_url = py.plot(fig)
     except Exception , e:
         print str(e)
         
@@ -249,10 +353,12 @@ class SimpleTable(tk.Frame):
         tk.Frame.__init__(self, root, background="white")
         #url="C:\Users\Space\Desktop\python projects\homrtown.htm"
         #url="http://www.flipkart.com/hometown-belmont-lhs-fabric-6-seater-sectional/p/itme9a8vy4vaewpv?pid=SOFE9A8VBYHCHWAC&al=PkGIJW3ywg1BOE%2BjqMQyMsldugMWZuE7eGHgUTGjVrorjjG6mWQYexJNoqguxi7zAlasJtENodI%3D&ref=L%3A-2969820631779752190&srno=b_1"
+        #r=requests.get(url,proxies=proxies)
         r=requests.get(url)
-        soup=BeautifulSoup(r.content)
+        soup=BeautifulSoup(r.content, 'html.parser')
         container=[]
         reviewTitle=[]
+        certified=[]
         ids=[]
         temp_url=url
         self.canvas = tk.Canvas(root, borderwidth=0, background="#ffffff")
@@ -263,8 +369,9 @@ class SimpleTable(tk.Frame):
         self.canvas.pack(side="left", fill="both", expand=True)
         self.canvas.create_window((200,200), window=self.frame, anchor="nw", tags="self.frame")
         self.frame.bind("<Configure>", self.onFrameConfigure)
+        #r= requests.get(url,proxies=proxies);
         r= requests.get(url);
-        soup =BeautifulSoup(r.content)
+        soup =BeautifulSoup(r.content, 'html.parser')
         g_data= soup.find_all("div",{"class":"recentReviews"})
         for links in g_data:
             aa=links.find_all("a")
@@ -273,10 +380,13 @@ class SimpleTable(tk.Frame):
         url= url[:-17]
         url2 = "http://www.flipkart.com"+ url+str("&rating=1,2,3,4,5&reviewers=all&type=top&sort=most_recent&start=")
         r=2
+        print url2
+        number=0;
         for i in range(2):
             url3= url2+str((i)*10)
+            #rr= requests.get(url3,proxies=proxies);
             rr= requests.get(url3);
-            soup =BeautifulSoup(rr.content)
+            soup =BeautifulSoup(rr.content, 'html.parser')
             g_data= soup.find_all("div",{"class":"review-list"})
             #print url3
             for col in g_data:
@@ -295,6 +405,13 @@ class SimpleTable(tk.Frame):
                         ids.append(user.get_text())
                         tk.Label(self.frame,text=user.get_text(),borderwidth=0, relief="solid",font=("Helvetica", 14)).grid(row=r,column=1,sticky="nsew",padx=1, pady=5)
                         r=r+1
+                    badge=sets.find_all("div",{"class":"badge-certified-buyer"})
+                    if not badge:
+                        certified.append(0)
+                    else:
+                        certified.append(1)
+                    number=number+1
+                    #print badge
                     for date in sets.find_all("div",{"class":"date"}):
                         #print date.get_text()
                         tk.Label(self.frame,text=date.get_text(),borderwidth=0, relief="solid",font=("Helvetica", 16)).grid(row=r,column=1,sticky="nsew",padx=1, pady=5)
@@ -312,7 +429,8 @@ class SimpleTable(tk.Frame):
                             tk.Label(self.frame,text=comments.get_text(),borderwidth=0, relief="solid",font=("Helvetica", 8)).grid(row=r,column=0,sticky="nsew",padx=1, pady=5,columnspan=10)
                             r=r+2
                     r=r+1
-        processLanguage(container,ids,temp_url,reviewTitle)
+        #print number
+        processLanguage(container,ids,temp_url,reviewTitle,certified)
     def set(self, row, column, value):
         widget = self._widgets[row][column]
         widget.configure(text=value)
