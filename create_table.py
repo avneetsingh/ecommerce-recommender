@@ -20,15 +20,13 @@ except ImportError:
     from urllib.request import urlopen
 
         
-        
+
+
 class ExampleApp(tk.Tk):
     def __init__(self,par):
         tk.Tk.__init__(self)
         SimpleTable(self,par).pack(side="top", fill="both", expand=True)
         
-        
-        #t.set(0,0,"Hello, world")
-#url=""
 class SimpleTable(tk.Frame):
     
     def __init__(self, root,par ):
@@ -38,8 +36,9 @@ class SimpleTable(tk.Frame):
         tk.Frame.__init__(self, root, background="black")
         #url="C:\Users\Space\Desktop\python projects\homrtown.htm"
         #url="http://www.flipkart.com/hometown-belmont-lhs-fabric-6-seater-sectional/p/itme9a8vy4vaewpv?pid=SOFE9A8VBYHCHWAC&al=PkGIJW3ywg1BOE%2BjqMQyMsldugMWZuE7eGHgUTGjVrorjjG6mWQYexJNoqguxi7zAlasJtENodI%3D&ref=L%3A-2969820631779752190&srno=b_1"
+        #r=requests.get(url,proxies=proxies)
         r=requests.get(url)
-        soup=BeautifulSoup(r.content)
+        soup=BeautifulSoup(r.content, 'html.parser')
         #url=par
         #print par+str("avneet")
         #soup=BeautifulSoup(open(url))
@@ -62,7 +61,7 @@ class SimpleTable(tk.Frame):
             for t in key:
                 tk.Label(self.frame,text=t.getText(),borderwidth=0, relief="solid",font=("Helvetica", 18)).grid(row=r,column=4,sticky="nsew",padx=1, pady=1)
                 r=r+1
-            for i in range(4):
+            for i in range(1):
                 tk.Label(self.frame,text=" ",borderwidth=0, relief="solid",font=("Helvetica", 10)).grid(row=r,column=4,sticky="nsew",padx=1, pady=1)
                 r=r+1
             price = soup.find_all("span",{"class":"selling-price"})
@@ -70,24 +69,27 @@ class SimpleTable(tk.Frame):
                 tk.Label(self.frame,text=str("Selling Price : ")+ p.getText(),borderwidth=0, relief="solid",font=("Helvetica", 18)).grid(row=r,column=4,sticky="nsew",padx=1, pady=1)
                 r=r+1
                 break
-            for i in range(4):
+            for i in range(1):
                 tk.Label(self.frame,text=" ",borderwidth=0, relief="solid",font=("Helvetica", 10)).grid(row=r,column=4,sticky="nsew",padx=1, pady=1)
                 r=r+1
+            tk.Label(self.frame,text=" Key Features",borderwidth=0, relief="solid",font=("Helvetica", 14)).grid(row=r,column=4,sticky="nsew",padx=1, pady=1)
+            r=r+1 
             key = titles.find_all("li",{"class":"key-specification"})
-            print key
+            #print key
             for t in key:
                 tk.Label(self.frame,text=t.getText(),borderwidth=0, relief="solid",font=("Helvetica", 16)).grid(row=r,column=4,sticky="nsew",padx=1, pady=1)
                 r=r+1        
-            for i in range(4):
+            for i in range(1):
                 tk.Label(self.frame,text=" ",borderwidth=0, relief="solid",font=("Helvetica", 10)).grid(row=r,column=4,sticky="nsew",padx=1, pady=1)
                 r=r+1   
         g_data=soup.find_all("div",{"class":"gu12"})
         keytitle=""
-        for i in range(10):
+        for i in range(1):
                 tk.Label(self.frame,text=" ",borderwidth=0, relief="solid",font=("Helvetica", 10)).grid(row=r,column=4,sticky="nsew",padx=1, pady=1)
                 r=r+1  
         test=""
-
+        tk.Label(self.frame,text=" Key Specifications",borderwidth=0, relief="solid",font=("Helvetica", 14)).grid(row=r,column=4,sticky="nsew",padx=1, pady=1)
+        r=r+1  
         for titles in g_data:
                 key = titles.find_all("div",{"class":"keyFeatures"})
                 #Label(self,text=str(titles)).grid(row=r,column=0,sticky=W)
