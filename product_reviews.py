@@ -12,8 +12,19 @@ import turtle
 import nltk
 import re
 import time
+import pdb
+import sys
+import math
+from textblob import TextBlob
+from nltk.corpus import stopwords
+from collections import defaultdict
+from nltk.probability import FreqDist
+from nltk.tokenize import RegexpTokenizer
+from nltk.corpus import stopwords
 from cStringIO import StringIO
 import plotly.graph_objs as go
+from nltk.corpus import wordnet as wn
+from itertools import product
 try:
     # Python2
     import Tkinter as tk
@@ -24,7 +35,13 @@ except ImportError:
     from urllib.request import urlopen
 import plotly.plotly as py
 from plotly.graph_objs import *
+from plotly import __version__
+from plotly.offline import download_plotlyjs, init_notebook_mode, iplot
+#print __version__ # requires version >= 1.9.0
+from plotly.offline import plot
+from plotly.graph_objs import Scatter
 import plotly
+
 
 plotly.tools.set_credentials_file(username='SPACE007', api_key='o61g0qzbgl')
 
@@ -34,6 +51,245 @@ neg = f.read().split('\n')[:-1]
 f.close()
 f=open('positive-words.txt','r')
 pos=f.read().split('\n')[:-1]
+# USe graph theorotic approach##############################################        
+class Graph:
+	def __init__(self):
+		self.Vertices = []
+		self.Edges = []
+
+	def getRankedVertices(self):
+		res = defaultdict(float)
+		for e in self.Edges:
+			res[e.Vertex1] += e.Weight
+		return sorted(res.items(), key=lambda x: x[1], reverse=True)
+
+class Vertex:
+	def __init__(self):
+		self.Sentence = None
+
+class Edge:
+	def __init__(self):
+		self.Vertex1 = None
+		self.Vertex2 = None
+		self.Weight = 0
+
+class WordType:
+	Content=0
+	Function=1
+	ContentPunctuation=2
+	FunctionPunctuation=3
+
+class Word:
+	def __init__(self):
+		self.Text=''
+		self.Type=''
+
+class Sentence:
+	def __init__(self):
+		self.Words = []
+
+	def getFullSentence(self):
+		text = ''
+		for w in self.Words:
+			text += w.Text
+		return text.strip()
+
+	def getReducedSentence(self):
+		sentenceText = ''
+		sentenceEnd = self.Words[len(self.Words)-1]
+		contentWords = filter(lambda w: w.Type == WordType.Content, self.Words)
+		i = 0
+		while i < len(contentWords):
+			w = contentWords[i]
+			# upper case the first character of the sentence
+			if i == 0:
+				li = list(w.Text)
+				li[0] = li[0].upper()
+				w.Text = ''.join(li)
+			sentenceText += w.Text
+			if i < len(contentWords)-1:
+				sentenceText += ' '
+			elif sentenceEnd.Text != w.Text:
+				sentenceText += sentenceEnd.Text
+			i = i+1
+		return sentenceText
+			
+
+class Paragraph:
+	def __init__(self):
+		self.Sentences = []
+from nltk.corpus import wordnet as wn
+from itertools import product
+
+def compare(word1, word2):
+    ss1 = wn.synsets(word1)
+    ss2 = wn.synsets(word2)
+    #return ss1.shortest_path_distance(ss2)
+    x=0.0
+    f=0
+    i=0
+    for each in product(ss1,ss2):
+        f=1
+        break
+    if(f):
+        for (s1,s2) in product(ss1,ss2):
+            x=max(x,s1.path_similarity(s2))
+            i=i+1
+            if(i>=1):
+                break
+        #x= max(s1.path_similarity(s2) for (s1, s2) in product(ss1, ss2))
+    return x
+class Reduction:
+	functionPunctuation = ' ,-'
+	contentPunctuation = '.?!\n'
+	punctuationCharacters = functionPunctuation+contentPunctuation
+	sentenceEndCharacters = '.?!'
+	
+	def isContentPunctuation(self, text):
+		for c in self.contentPunctuation:
+			if text.lower() == c.lower():
+				return True
+		return False
+
+	def isFunctionPunctuation(self, text):
+		for c in self.functionPunctuation:
+			if text.lower() == c.lower():
+				return True
+		return False
+
+	def isFunction(self, text, stopWords):
+		for w in stopWords:
+			if text.lower() == w.lower():
+				return True
+		return False
+
+	def tag(self, sampleWords, stopWords):
+		taggedWords = []
+		for w in sampleWords:
+			tw = Word()
+			tw.Text = w
+			if self.isContentPunctuation(w):
+				tw.Type = WordType.ContentPunctuation
+			elif self.isFunctionPunctuation(w):
+				tw.Type = WordType.FunctionPunctuation
+			elif self.isFunction(w, stopWords):
+				tw.Type = WordType.Function
+			else:
+				tw.Type = WordType.Content
+			taggedWords.append(tw)
+		return taggedWords
+
+	def tokenize(self, text):
+		return filter(lambda w: w != '', re.split('([{0}])'.format(self.punctuationCharacters), text))	
+
+	def getWords(self, sentenceText, stopWords):
+		return self.tag(self.tokenize(sentenceText), stopWords) 
+
+	def getSentences(self, line, stopWords):
+		sentences = []
+		sentenceTexts = filter(lambda w: w.strip() != '', re.split('[{0}]'.format(self.sentenceEndCharacters), line))	
+		sentenceEnds = re.findall('[{0}]'.format(self.sentenceEndCharacters), line)
+		sentenceEnds.reverse()
+		for t in sentenceTexts:
+			if len(sentenceEnds) > 0:
+				t += sentenceEnds.pop()
+			sentence = Sentence()
+			sentence.Words = self.getWords(t, stopWords)
+			sentences.append(sentence)
+		return sentences
+
+	def getParagraphs(self, lines, stopWords):
+		paragraphs = []
+		for line in lines:
+			paragraph = Paragraph()
+			paragraph.Sentences = self.getSentences(line, stopWords)
+			paragraphs.append(paragraph)
+		return paragraphs
+
+	def findWeight(self, sentence1, sentence2):
+		length1 = len(filter(lambda w: w.Type == WordType.Content, sentence1.Words))
+		length2 = len(filter(lambda w: w.Type == WordType.Content, sentence2.Words))
+		if length1 < 4 or length2 < 4:
+			return 0
+		weight = 0.0
+		for w1 in filter(lambda w: w.Type == WordType.Content, sentence1.Words):
+			for w2 in filter(lambda w: w.Type == WordType.Content, sentence2.Words):
+			    #weight = weight + (float)(compare(str(w1.Text.lower()),str(w2.Text.lower())))
+                            #first=wn.synsets(str(w1.Text.lower()))[0]
+                            #second=wn.synsets(str(w2.Text.lower()))[0]
+                            try:
+                                weight= weight + compare(str(w1.Text.lower()),str(w2.Text.lower()))
+                            except Exception:
+                                if w1.Text.lower() == w2.Text.lower():
+					weight = weight + 1
+				
+                print weight
+		normalised1 = 0
+		if length1 > 0:
+			normalised1 = math.log(length1)
+		normalised2 = 0
+		if length2 > 0:
+			normalised2 = math.log(length2)
+		norm = normalised1 + normalised2
+		if norm == 0:
+			return 0
+		return weight / float(norm)
+
+	def buildGraph(self, sentences):
+		g = Graph()
+		for s in sentences:
+			v = Vertex()
+			v.Sentence = s
+			g.Vertices.append(v)
+		for i in g.Vertices:
+			for j in g.Vertices:
+				if i != j:
+					w = self.findWeight(i.Sentence, j.Sentence)
+					e = Edge()
+					e.Vertex1 = i
+					e.Vertex2 = j
+					e.Weight = w
+					g.Edges.append(e)
+		return g
+
+	def sentenceRank(self, paragraphs):
+		sentences = []
+		for p in paragraphs:
+			for s in p.Sentences:
+				sentences.append(s)
+		g = self.buildGraph(sentences)
+		return g.getRankedVertices()
+
+	def reduce(self, text, reductionRatio):
+		stopWordsFile = 'stopWords.txt'
+		stopWords= open(stopWordsFile).read().splitlines()
+
+		lines = '\n'.join(text)
+		lines = lines.splitlines()
+		contentLines = filter(lambda w: w.strip() != '', lines)
+
+		paragraphs = self.getParagraphs(contentLines, stopWords)
+
+		rankedSentences = self.sentenceRank(paragraphs)
+
+		orderedSentences = []
+		for p in paragraphs:
+			for s in p.Sentences:
+				orderedSentences.append(s)
+
+		reducedSentences = []
+		i = 0
+		while i < math.trunc(len(rankedSentences) * reductionRatio):
+			s = rankedSentences[i][0].Sentence
+			position = orderedSentences.index(s)
+			reducedSentences.append((s, position))
+			i = i + 1
+		reducedSentences = sorted(reducedSentences, key=lambda x: x[1])
+		
+		reducedText = []
+		for s,r in reducedSentences:
+			reducedText.append(s.getFullSentence())
+		return reducedText	
 ow=[]
 but=0
 def but_rule(feat,ow,sent):
@@ -146,9 +402,14 @@ def processLanguage(exampleArray, ids,url,reviewTitle,certified):
                     
                 #chunked.draw()
                 #namedEnt.draw()'''
-
+        reduction = Reduction()
+        #text = open('product.txt').read()
+        text = exampleArray
+        reduction_ratio =0.04
+        #reduced_text=[]
+        reduced_text = reduction.reduce(text, reduction_ratio)
         #r=requests.get(url,proxies=proxies)
-        #r=requests.get(url)
+        r=requests.get(url)
         feature=[]
         averagerating=0;
         #soup=BeautifulSoup(r.content, 'html.parser')
@@ -163,6 +424,7 @@ def processLanguage(exampleArray, ids,url,reviewTitle,certified):
         feature.append("service")
         features['delivery']=[[],[],[]]
         feature.append("delivery")
+        #print url
         #r= requests.get(url,proxies=proxies);
         r=requests.get(url)
         #specsKey=""
@@ -193,6 +455,12 @@ def processLanguage(exampleArray, ids,url,reviewTitle,certified):
         userId=-1
         flag=1
         active=0;
+        for each in display:
+            print (each)
+        print "\n"
+        for each in reduced_text:
+            print each
+            print "\n"
         #features={'camera':[[],[],[]],'picture':[[],[],[]],'display':[[],[],[]],'processor':[[],[],[]],'battery':[[],[],[]],'control':[[],[],[]],'touch':[[],[],[]],'memory':[[],[],[]],'nfc':[[],[],[]],'design':[[],[],[]],'price':[[],[],[]],'experience':[[],[],[]]}
         for j in exampleArray:
             #print (ids[kk])
@@ -200,7 +468,8 @@ def processLanguage(exampleArray, ids,url,reviewTitle,certified):
             if(flag==1):
                 userId=userId+1
             flag=1-flag
-            #print userId
+            if(flag):
+                print userId
             t = nltk.pos_tag(tokens)
             temp={}
             feat_o={}
@@ -231,37 +500,39 @@ def processLanguage(exampleArray, ids,url,reviewTitle,certified):
             for c in feat_o:
                 temp=temp+1
                 if feat_o[c]==1:
-                    features[c][0].append(kk)
-                    if(certified[userId]==1):
-                        rate =rate+ 0.9
-                    else:
-                        rate=rate+ 0.7
-                    kk=kk+1
+                    if userId not in features[c][0]:
+                        features[c][0].append(userId)
+                        if(certified[userId]==1):
+                            rate =rate+ 0.9
+                        else:
+                            rate=rate+ 0.7
+                        kk=kk+1
                 elif feat_o[c]==-1:
-                    features[c][1].append(kk)
-                    if(certified[userId]==1):
-                        rate =rate+0.5
-                    else:
-                        rate=rate-+0.3
-                    kk=kk+1
+                    if userId not in features[c][1]:
+                        features[c][1].append(userId)
+                        if(certified[userId]==1):
+                            rate =rate+0.5
+                        else:
+                            rate=rate-+0.3
+                        kk=kk+1
                 else:
-                    features[c][2].append(kk)
-                    if(certified[userId]==1):
-                        rate =rate + 0.8
-                    else:
-                        rate=rate + 0.6
-                    kk=kk+1
+                    if userId not in features[c][2]:
+                        features[c][2].append(userId)
+                        if(certified[userId]==1):
+                            rate =rate + 0.8
+                        else:
+                            rate=rate + 0.6
+                        kk=kk+1
 		#kk=kk+1
-            print str(rate)+" hello"
+            if(flag):
+                print str(rate)+" hello"
             if(rate>0):
                 active=active+1
-            averagerating = averagerating + 4.0*rate
+            averagerating = averagerating + 4.1*rate
         #print active
         averagerating=averagerating/active
         print "Average Rating of "+ title+ " = " +str(averagerating)
-        for each in display:
-            print (each)
-        print "\n"
+        
         labelpos=[]
         labelneg=[]
         valuepos=[]
@@ -335,7 +606,7 @@ def processLanguage(exampleArray, ids,url,reviewTitle,certified):
             title='Review Analysis of '+title+ " from Flipkart"
         )
         fig = Figure(data=data, layout=layout)
-        plot_url = py.plot(fig)
+        plot(fig)
     except Exception , e:
         print str(e)
         
@@ -380,7 +651,7 @@ class SimpleTable(tk.Frame):
         url= url[:-17]
         url2 = "http://www.flipkart.com"+ url+str("&rating=1,2,3,4,5&reviewers=all&type=top&sort=most_recent&start=")
         r=2
-        print url2
+        #print url2
         number=0;
         for i in range(2):
             url3= url2+str((i)*10)
